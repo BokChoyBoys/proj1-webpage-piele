@@ -1,7 +1,172 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2023</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Pierre Le, CS184</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>
+  In this project, I implement multiple methods of rasterizing. Rasterize means to convert an image into a pixels which we can use in software. I started with a simple sampling method in Task 1. Over the tasks, the sampling methods got more sophisticated which had their own benefits of performance or sharper images. I play video games which generally have graphics settings like antialiasing. I learned why changing graphics setting could increase performance at a cost of quality since in this project, using a sample rate of 1 is much faster than a sample rate of 4. Supersampling seems fairly intuitive because someone might ask "Oh how do we get a higher quality image?" and a reasonable answer would be to sample more points. This would raise another problem since if given constraints, more points might not be feasible and the answer to that would be to downsample.
+</p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Task 1: Rasterizing single-color triangles</h3>
+  <p>
+    To rasterize a triangle, we start by getting a bounding box of the minimum and maximum x y values. We iterate through all the points in the box. To fill a (x, y) point with color, we need to test if the point is within the triangle. We do this by using the three line tests which is testing what side a point is on when a line cuts the plane in half. A line test returns a value which enumerates what side a point is on which includes on the line itself. By creating three lines from the vertices of a triangle, we can test if all the line tests return the same sign to show if a point is in the triangle. In our case, points on the line are consider in the triangle.
+  </p>
+  <p>
+    Since I am using the minimum and maximum x and y of the vertices, this is a bounding box which is no worse than checking each sample in the box.
+  </p>
+  <div align="middle">
+    <img src="images/task1.png" align="middle" width="400px"/>
+  </div>
+
+
+<h3 align="middle">Task 2: Antialiasing triangles</h3>
+<p>
+  Supersampling is essentially the same as the sampling done in Task 1 with the exception that we sampling on a larger canvas and downsample it by averaging the colors. First, we have to allocate a sample buffer that is larger by a factor of the sample rate. Then, we have to convert our vertex indices of the original sample buffer to the new one by multiplying by the sqrt of sample rate (n). Now for every point, we have to sample n times in each dimension. Each point has to be shifted by some index from 0 to n. Then the rest of algorithm follows the same structure as Task 1 which is checking if point in triangle and filling it if so. The row shift in fill_pixel has to be multiplied by n since there are now n * width amount of pixels in a row. Then in resolve_to_framebuffer(), we loop over the original size, average the color of samples in the pixel, and fill. Supersampling is useful because our sampling is restricted to the resolution since it is discrete. The more we sample, the more accurate our testing if points are in the triangle become. I did not change anything about the pipeline. With Task 1 sampling, our fills were all or nothing even if there was a piece of the triangle in the pixel. This would create jagged edges which can be fixed with supersampling. Supersampling antialiases the triangles since we average the colors of a higher resolution which creates a blur that hides jagged edges.
+</p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/task21.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 1.</figcaption>
+        </td>
+        <td>
+          <img src="images/task22.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 4.</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/task23.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 9.</figcaption>
+        </td>
+        <td>
+          <img src="images/task24.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 16.</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<h3 align="middle">Task 3: Transforms</h3>
+  <div align="middle">
+    <img src="images/task3.png" align="middle" width="400px"/>
+  </div>
+I attempted at making the stick man do the splits by rotating their legs.
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Task 4: Barycentric coordinates</h3>
+  <div align="middle">
+    <img src="images/task4.png" align="middle" width="400px"/>
+  </div>
+Barycentric coordinates is a system of coordinates for triangles. Essentially if you draw a line from a vertex to the opposite side going through a point, then the distance from the point to the side is one of the barycentric coordinate. The sign corresponds to what side the point is on with positive being between the vertex and side and negative being after the side. If we get the coordinates of each vertex, we can test if the point is in the triangle if all the coordinates are positive. In the image, we see that there is some point inside the triangle where we draw a line towards. The barycentric coordinates are the extension after that line to the opposing side. Using these coordinates, we can scale it by color which we see in the image as some weighted average of distance from a vertex.
+  <div align="middle">
+    <img src="images/task42.png" align="middle" width="400px"/>
+  </div>
+  <h3 align="middle">Task 5: "Pixel sampling" for texture mapping</h3>
+Pixel sampling is checking if the center of a pixel is in a boundary and filling it if it is. We are given a texture mapping with colors with a different basis. Thus, we need to change our basis of xy coordinates to uv coordinates to get the correct color. To do this we use a matrix multiply as a change of basis. In this case, the multiply each barycentric coordinate with the corresponding u or v. Then using the uv coordinate, we get the texel from the mipmap. There are two pixel sampling methods which are nearest and bilinear. Nearest takes the nearest texel of uv which is the floor of both u and v. Bilinear takes the 4 closest texels and then gets a weighted average of the texels by using two helper lerps to get one of weights and a lerp on the helper lerps to get another weight.
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/task51.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 1, Nearest.</figcaption>
+        </td>
+        <td>
+          <img src="images/task52.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 16, Nearest.</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/task53.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 1, Bilinear.</figcaption>
+        </td>
+        <td>
+          <img src="images/task54.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sample rate = 16, Bilinear.</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  Nearest is the all or nothing method since it is absolute. In the images, nearest sample 1 does not have an apparent line likely because the pixel being sample was closer to the blue color. Increasing the sample rate shows a more faint line and more jagged. Bilinear has a faint line but smoother line. Increasing the sample rate decreased the jaggedness. If there a point being sampled in the center of all the four nearest texels, then there would be a large difference if the colors of the texels are distinct. Nearest would take the top left texel while bilinear would average out the 4 texels and make the resulting color look more uniform.
+<h3 align="middle">Task 6: "Level sampling" with mipmaps for texture mapping</h3>
+<p>Level sampling is like the other sampling methods from previous tasks but it takes color from different levels from a mipmap. It chooses a level based on the partial derivatives of the uv and xy coordinates and the type of level sampling. I implemented by adding two extra pixels in barycentric coordinates to be checked and transformed into uv coordinates. These two extras samples are for calculating the derivative and I set them to the original if they are out of the triangle. Then I found the max of the norms of the derivatives to find the level. Based on the lsm, I changed the level by setting to 0, rounding to nearest integer, or finding a weighted average of the continuous part of D.
+</p>
+  <p>
+    Nearest pixel sampling is fast as it doesn't require checking extra pixels. It uses a mipmap which can be memory intensive. Its antialiasing power is not great since the values are absolute. Bilinear is slightly slower than nearest but still as fast. Its memory usage is the same as nearest since it needs a mipmap. Its antialiasing is good since it can average out nearby texels.
+  </p>
+  <p>
+    Level sampling is not as fast as pixel sampling since you need to do extra calculations. Its memory usage is terrible since it needs multiple mipmap levels. Its antialiasing power is probably the best out of the three.
+  </p>
+<p>
+  Number of samples per pixel is slow since it requires sample rate times more samples. It memory usage depends on the sample rate since it needs to allocate a larger sample buffer. Its antialiasing power is good and probably as good as level sampling or better.
+</p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/task61.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_ZERO, P_NEAREST</figcaption>
+        </td>
+        <td>
+          <img src="images/task62.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_ZERO, P_LINEAR</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/task63.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_NEAREST, P_NEAREST</figcaption>
+        </td>
+        <td>
+          <img src="images/task64.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_NEAREST, P_LINEAR</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3>
+  <a href="https://bokchoyboys.github.io/proj1-webpage-piele/proj1/index.html">https://bokchoyboys.github.io/proj1-webpage-piele/proj1/index.html</a>
+</body>
 </html>
