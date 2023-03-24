@@ -1,7 +1,226 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Pierre Le  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 3-2: Additional Features to PathTracer</h1>
+    <h2 align="middle">Pierre Le</h2>
+<h2 align="middle">Website URL: <a href="https://bokchoyboys.github.io/proj1-webpage-piele/proj3-2/index.html">https://bokchoyboys.github.io/proj1-webpage-piele/proj3-2/index.html</a></h2>
+    <div class="padded">
+
+        
+        I did Part 1 and Part 4.
+
+        <h3 align="middle">Part 1. Mirror and Glass Materials</h3>
+
+        <p><b>
+            Show a sequence of six images of scene `CBspheres.dae` rendered with `max_ray_depth` set to 0, 1, 2, 3, 4, 5, and 100. The other settings should be at least 64 samples per pixel and 4 samples per light. Make sure to include all screenshots.
+        </b></p>
+        <p>
+            I used 64 samples per pixel and 4 samples per light.
+        </p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/task11.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 0 (CBspheres.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task12.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 1 (CBspheres.dae)</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/task13.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 2 (CBspheres.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task14.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 3 (CBspheres.dae)</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/task15.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 4 (CBspheres.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task16.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 5 (CBspheres.dae)</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/task17.png" align="middle" width="400px"/>
+                        <figcaption>max_ray_depth = 100 (CBspheres.dae)</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <p><b>
+            Point out the new multibounce effects that appear in each image. 
+        </b></p>
+        <p>
+            At m=0, there is no bounces since this is zero bounce. At m=1, the balls are mostly dark except for the ceiling light which is reflected/refracted. At m=2, the reflection sphere mostly reflects the environment. The other sphere in the reflection is dark as well as the ceiling. The reflection spheres basically reflects the m=1 photo. The refraction sphere is still mostly dark but there is some refraction. At m=3, the reflection sphere has a lit ceiling in the reflection. The refraction sphere in the reflection sphere is still dark. The reflection sphere has more noise from m=2 and the underside of the sphere is more lit. The refraction sphere shows refraction now as well as the refraction below the sphere. At m=4, the refraction sphere in the reflection sphere is now lit. The refraction sphere has more noise now and has refraction on the blue wall. At m=5, the reflection sphere looks mostly the same. There is slight difference in noise on the refraction sphere in the reflection sphere but that can be due to noise. The refraction sphere also looks most the same. At m=100, both spheres look mostly the same. The refraction below the refraction sphere in the reflection sphere is slightly more visible now.
+        </p>
+        <br>
+        <p><b>
+            Explain how these bounce numbers relate to the particular effects that appear. Make sure to include all screenshots.
+        </b></p>
+        <p>
+            For the reflection sphere, the reflection looks like scene from the previous ray depth or ray depth - 1. This is because the reflection seen from the camera requires another bounce since we are reflecting which makes the reflection on the sphere look like ray depth - 1. For the refraction sphere, the light has to have an extra bounce to leave the sphere so that is why we can fully see the refraction at m=3 when the reflection was visible at m=2. We see the refraction on the right blue wall when m=4 since light exiting the sphere require 3 bounces to be seen by the camera so bouncing off the wall would require another bounce hence m=4. This is why the light under the sphere is visible at m=3 since light exits the sphere with two bounces and then bounces to the camera.
+        </p>
+        <br>
+
+
+        <h3 align="middle">Part 2. Microfacet Material</h3>
+        <p><b>
+            Show a screenshot sequence of 4 images of scene `CBdragon_microfacet_au.dae` rendered with $\alpha$ set to 0.005, 0.05, 0.25 and 0.5. The other settings should be at least 128 samples per pixel and 1 samples per light. The number of bounces should be at least 5. Describe the differences between different images. Note that, to change the $\alpha$, just open the .dae file and search for `microfacet`.
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        <p><b>
+            Show two images of scene `CBbunny_microfacet_cu.dae` rendered using cosine hemisphere sampling (default) and your importance sampling. The sampling rate should be fixed at 64 samples per pixel and 1 samples per light. The number of bounces should be at least 5. Briefly discuss their difference.
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        <p><b>
+            Show at least one image with some other conductor material, replacing `eta` and `k`. Note that you should look up values for real data rather than modifying them arbitrarily. Tell us what kind of material your parameters correspond to. 
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        
+        
+        
+
+        <h3 align="middle">Part 3. Environment Lightl</h3>
+        <b>Pick one *.exr* file to use for all subparts here. Include a converted *.jpg* of it in your website so we know what map you are using.</b>
+        
+        <p><b>
+            In a few sentences, explain the ideas behind environment lighting (i.e. why we do it/how it works).
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        <p><b>
+            Show the *probability_debug.png* file for the *.exr* file you are using, generated using the `save_probability_debug()` helper function after initializing your probability distributions.
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        <p><b>
+            Use the `bunny_unlit.dae` scene and your environment map *.exr* file and render two pictures, one with uniform sampling and one with importance sampling. Use 4 samples per pixel and 64 samples per light in each. Compare noise levels. Make sure to include all screenshots.
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+        <p><b>
+            Use a different image (if you did part 2, we recommend `bunny_microfacet_cu_unlit.dae`) and your environment map *.exr* file and render two pictures, one with uniform sampling and one with importance sampling. Use 4 samples per pixel and 64 samples per light in each. Compare noise levels. Make sure to include all screenshots.
+        </b></p>
+        <p>
+            Your response goes here.
+        </p>
+        <br>
+
+
+
+        <h3 align="middle">Part 4. Depth of Field</h3>
+        <b>
+            For these subparts, we recommend using a microfacet BSDF scene to show off the cool out of focus effects you can get with depth of field!
+        </b>
+        <p><b>
+            In a few sentences, explain the differences between a pinhole camera model and a thin-lens camera model. 
+        </b></p>
+        <p>
+            Pinhole camera model allows light to only go into the camera in one direction which causes the subject to always be in focus. Thin lens camera model refract incoming light which makes it come in different directions. Only at the focal length plane is when the object is in focus.
+        </p>
+        <br>
+        <p><b>
+            Show a "focus stack" where you focus at 4 visibly different depths through a scene. Make sure to include all screenshots.
+        </b></p>
+        <p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/task41.png" align="middle" width="400px"/>
+                        <figcaption>d = 1 (CBdragon.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task4452.png" align="middle" width="400px"/>
+                        <figcaption>d = 4.5 (CBdragon.dae)</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/task410.png" align="middle" width="400px"/>
+                        <figcaption>d = 10 (CBdragon.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task440.png" align="middle" width="400px"/>
+                        <figcaption>d = 40 (CBdragon.dae)</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </p>
+        <br>
+        <p><b>
+            Show a sequence of 4 pictures with visibly different aperture sizes, all focused at the same point in a scene. Make sure to include all screenshots.
+        </b></p>
+        <p>
+        <div align="middle">
+            <table style="width:100%">
+                <tr align="center">
+                    <td>
+                        <img src="images/task4b01.png" align="middle" width="400px"/>
+                        <figcaption>b = 0.1 (CBdragon.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/1cc.png" align="middle" width="400px"/>
+                        <figcaption>b = 0.23 (CBdragon.dae)</figcaption>
+                    </td>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <img src="images/task4b1.png" align="middle" width="400px"/>
+                        <figcaption>b = 1 (CBdragon.dae)</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/task4b2.png" align="middle" width="400px"/>
+                        <figcaption>b = 2 (CBdragon.dae)</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </p>
+        <br>
+
+    </div>
+</body>
 </html>
+
